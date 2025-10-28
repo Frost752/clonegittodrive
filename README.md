@@ -28,10 +28,42 @@ This repository contains a Python script that backs up a specified Git repositor
 
 ## Installation
 
-First, ensure you have Python 3.6 or later installed. Then, install the required Python packages.
+### 1. Clone the Repository
+
+First, clone the repository to your local machine:
 
 ```bash
-pip install gitpython google-auth google-auth-oauthlib google-api-python-client
+git clone https://github.com/Frost752/clonegittodrive.git
+cd clonegittodrive
+```
+
+### 2. Create a Virtual Environment
+
+Create a virtual environment in your project folder:
+
+```bash
+python3 -m venv venv
+```
+
+### 3. Activate the virtual environment:
+
+On macOS/Linux:
+
+```bash
+source venv/bin/activate
+```
+
+On Windows:
+
+```bash
+.\venv\Scripts\activate
+```
+
+### 4. Install Dependencies
+With the virtual environment active, install the dependencies listed in src/requirements.txt:
+
+```bash
+pip install -r src/requirements.txt
 ```
 
 ## Usage
@@ -86,7 +118,7 @@ Before you can interact with Google Drive through the API, you need to set up th
 Use the command line to run the backup script with the appropriate arguments.
 
 ```bash
-python backup_script.py --repo /path/to/repo --folder YOUR_DRIVE_FOLDER_ID [--commit COMMIT_HASH_OR_TAG]
+python src/main.py --repo /path/to/repo --folder YOUR_DRIVE_FOLDER_ID [--commit COMMIT_HASH_OR_TAG]
 ```
 
     --repo or -r: Path to the Git repository (default: current directory).
