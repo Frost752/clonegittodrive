@@ -187,7 +187,7 @@ def create_changelog(repo, tag_name, target_folder_id, service, commit):
     for c in commits:
         changelog_lines.append(f"- {c.hexsha[:7]}: {c.message.strip()}")
     
-    changelog_path = os.path.join(os.getcwd(), "CHANGELOG")
+    changelog_path = os.path.join(os.getcwd(), "CHANGELOG.txt")
     with open(changelog_path, "w", encoding="utf-8") as f:
         f.write("\n".join(changelog_lines))
     
