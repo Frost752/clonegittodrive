@@ -192,8 +192,7 @@ def create_changelog(repo, tag_name, target_folder_id, service, commit):
         f.write("\n".join(changelog_lines))
     
     upload_file(service, changelog_path, target_folder_id)
-    os.remove(changelog_path)
-
+    # os.remove(changelog_path)
 
 if __name__ == "__main__":
     main()
