@@ -71,17 +71,48 @@ def find_folder(service, name, parent_id=None):
     files = results.get("files", [])
     return files[0]["id"] if files else None
 
+def find_file(service, name, parent_id):
+    """Finds a non-folder file by name in a specific parent folder."""
+    query = f"name='{name}' and '{parent_id}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'"
+    results = service.files().list(
+        q=query,
+        spaces="drive",
+        fields="files(id, name)",
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True,
+    ).execute()
+    files = results.get("files", [])
+    return files[0]["id"] if files else None
+
 def upload_file(service, filepath, parent_id):
+    """Uploads a file, updating it if it already exists, or creating it otherwise."""
     filename = os.path.basename(filepath)
     media = MediaFileUpload(filepath, resumable=True)
-    file_metadata = {"name": filename, "parents": [parent_id]}
-    uploaded_file = service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields="id, name",
-        supportsAllDrives=True,
-    ).execute()
-    print(f"Uploaded '{filename}' (ID: {uploaded_file['id']})")
+    
+    existing_file_id = find_file(service, filename, parent_id)
+    
+    if existing_file_id:
+        # Update existing file using Files: update
+        file_metadata = {}
+        uploaded_file = service.files().update(
+            fileId=existing_file_id,
+            body=file_metadata,
+            media_body=media,
+            fields="id, name",
+            supportsAllDrives=True,
+        ).execute()
+        print(f"Updated existing file '{filename}' (ID: {uploaded_file['id']})")
+    else:
+        # Create new file using Files: create
+        file_metadata = {"name": filename, "parents": [parent_id]}
+        uploaded_file = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields="id, name",
+            supportsAllDrives=True,
+        ).execute()
+        print(f"Uploaded new file '{filename}' (ID: {uploaded_file['id']})")
+        
     return uploaded_file["id"]
 
 def get_or_create_drive_path(service, parent_id, relative_path):
@@ -206,6 +237,7 @@ def create_changelog(repo, tag_name, target_folder_id, service, commit):
     with open(changelog_path, "w", encoding="utf-8") as f:
         f.write(combined)
 
+    # This call now correctly updates the file on Drive if it already exists
     upload_file(service, changelog_path, target_folder_id)
 
 if __name__ == "__main__":
