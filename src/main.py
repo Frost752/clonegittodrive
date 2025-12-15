@@ -167,32 +167,46 @@ def backup_repo(repo_path, root_drive_folder_id, commit_ref):
     print(f"Backup of '{repo_name}' (commit/tag: {tag_name}) completed!")
 
 def create_changelog(repo, tag_name, target_folder_id, service, commit):
-    # Fetch commits between the previous tag (if any) and the specified commit
     previous_tag = None
     sorted_tags = sorted(repo.tags, key=lambda t: t.commit.committed_datetime)
-    
+
     for i, t in enumerate(sorted_tags):
         if t.name == tag_name and i > 0:
             previous_tag = sorted_tags[i - 1].name
             break
 
     if previous_tag:
-        commits = list(repo.iter_commits(f'{previous_tag}..{tag_name}'))
+        commits = list(repo.iter_commits(f"{previous_tag}..{tag_name}"))
     else:
-        commits = list(repo.iter_commits(f'{tag_name}'))
-    
+        commits = list(repo.iter_commits(f"{tag_name}"))
+
     commits.reverse()
-    
-    changelog_lines = [f"Tag/Commit: {tag_name}", f"Commit message: {commit.message.strip()}", "", "Commits included:"]
+
+    new_section = []
+    new_section.append("=" * 60)
+    new_section.append(f"Tag/Commit: {tag_name}")
+    new_section.append(f"Commit message: {commit.message.strip()}")
+    new_section.append("Commits included:")
     for c in commits:
-        changelog_lines.append(f"- {c.hexsha[:7]}: {c.message.strip()}")
-    
+        new_section.append(f"- {c.hexsha[:7]}: {c.message.strip()}")
+    new_section.append("=" * 60)
+    new_section.append("")
+
+    new_text = "\n".join(new_section)
+
     changelog_path = os.path.join(os.getcwd(), "CHANGELOG.txt")
+
+    if os.path.exists(changelog_path):
+        with open(changelog_path, "r", encoding="utf-8") as f:
+            old_content = f.read()
+        combined = new_text + "\n" + old_content
+    else:
+        combined = new_text
+
     with open(changelog_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(changelog_lines))
-    
+        f.write(combined)
+
     upload_file(service, changelog_path, target_folder_id)
-    # os.remove(changelog_path)
 
 if __name__ == "__main__":
     main()
